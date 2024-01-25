@@ -105,25 +105,55 @@ class scoopingEnv(MPMBaseEnv):
 
     def _load_actors(self):
         super()._load_actors()
-        bowl_dir = os.path.join(
-            PACKAGE_ASSET_DIR, "descriptions/feeding/meshes/bowl.STL"
-            )
-        pose = sapien.Pose([0, 0, 0.06])
-        b = self._scene.create_actor_builder()
-        b.add_visual_from_file(bowl_dir, pose, scale=[0.002] * 3)
-        b.add_collision_from_file(bowl_dir, pose, scale=[0.002] * 3, density=300)
-        self.source_container = b.build("bowl")
-        self.source_aabb = get_local_axis_aligned_bbox_for_link(self.source_container)
 
-        spoon_dir = os.path.join(
-            PACKAGE_ASSET_DIR, "descriptions/feeding/meshes/spoon.STL"
-            )
-        pose = sapien.Pose([0.0025, -0.1105, 0.2],[-0.007,-0.699,0.007,0.715])
         b = self._scene.create_actor_builder()
-        b.add_visual_from_file(spoon_dir, pose, scale=[0.001] * 3)
-        b.add_collision_from_file(spoon_dir, pose, scale=[0.001] * 3, density=300)
-        self.source_container = b.build("spoon")
-        self.source_aabb = get_local_axis_aligned_bbox_for_link(self.source_container)
+        b.add_box_collision(half_size=[0.12, 0.02, 0.03])
+        b.add_box_visual(half_size=[0.12, 0.02, 0.03])
+        w0 = b.build_kinematic("wall")
+        w1 = b.build_kinematic("wall")
+        w2 = b.build_kinematic("wall")
+        w3 = b.build_kinematic("wall")
+
+        w0.set_pose(sapien.Pose([0, -0.1, 0.03]))
+        w1.set_pose(sapien.Pose([0, 0.1, 0.03]))
+        w2.set_pose(sapien.Pose([-0.1, 0, 0.03], [0.7071068, 0, 0, 0.7071068]))
+        w3.set_pose(sapien.Pose([0.1, 0, 0.03], [0.7071068, 0, 0, 0.7071068]))
+        self.walls = [w0, w1, w2, w3]
+
+        # beaker_file = os.path.join(
+        #     PACKAGE_ASSET_DIR, "deformable_manipulation", "beaker.glb"
+        # )
+        # target_radius = 0.12
+        # b = self._scene.create_actor_builder()
+        # b.add_visual_from_file(beaker_file, scale=[target_radius] * 3)
+        # b.add_collision_from_file(beaker_file, scale=[target_radius] * 3, density=300)
+        # self.target_beaker = b.build("target_beaker")
+        # self.target_aabb = get_local_axis_aligned_bbox_for_link(self.target_beaker)
+        # self.target_aabc = get_local_aabc_for_actor(self.target_beaker)
+
+
+        # bowl_dir = os.path.join(
+        #     PACKAGE_ASSET_DIR, "descriptions/feeding/meshes/bowl.STL"
+        #     )
+        # bowl_collision_dir = os.path.join(
+        #     PACKAGE_ASSET_DIR, "descriptions/feeding/meshes/bowl.STL.convex.stl"
+        #     )
+        # pose = sapien.Pose([0, 0, 0.07])
+        # b = self._scene.create_actor_builder()
+        # b.add_visual_from_file(bowl_dir, pose, scale=[0.002] * 3)
+        # b.add_collision_from_file(bowl_collision_dir, pose, scale=[0.002] * 3, density=300)
+        # self.source_container = b.build("bowl")
+        # self.source_aabb = get_local_axis_aligned_bbox_for_link(self.source_container)
+
+        # spoon_dir = os.path.join(
+        #     PACKAGE_ASSET_DIR, "descriptions/feeding/meshes/spoon.STL"
+        #     )
+        # pose = sapien.Pose([0.0025, -0.1105, 0.2],[-0.007,-0.699,0.007,0.715])
+        # b = self._scene.create_actor_builder()
+        # b.add_visual_from_file(spoon_dir, pose, scale=[0.001] * 3)
+        # b.add_collision_from_file(spoon_dir, pose, scale=[0.001] * 3, density=300)
+        # self.source_container = b.build("spoon")
+        # self.source_aabb = get_local_axis_aligned_bbox_for_link(self.source_container)
 
     # def _get_coupling_actors(
     #     self,
@@ -198,7 +228,7 @@ class scoopingEnv(MPMBaseEnv):
         )
 
         count = self.model_builder.add_mpm_from_height_map(
-            pos=(0.0, 0.0, 0.1),
+            pos=(0.0, 0.0, 0.055),
             vel=(0.0, 0.0, 0.0),
             dx=0.005,
             height_map=height_map,
@@ -236,6 +266,8 @@ class scoopingEnv(MPMBaseEnv):
         self.target_height = 0.2
         self.target_num = self._episode_rng.choice(range(250, 1150), 1)[0]
         self.mpm_model.struct.n_particles = len(self.model_builder.mpm_particle_q)
+
+        # self.target_beaker.set_pose(self._target_pos)
 
     def _initialize_agent(self):
         qpos = np.array([-0.139, 0.417, -1.811, -0.035, 1.442, -0.176, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85])
