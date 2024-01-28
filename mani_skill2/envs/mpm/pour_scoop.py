@@ -106,19 +106,19 @@ class scoopingEnv(MPMBaseEnv):
     def _load_actors(self):
         super()._load_actors()
 
-        b = self._scene.create_actor_builder()
-        b.add_box_collision(half_size=[0.12, 0.02, 0.03])
-        b.add_box_visual(half_size=[0.12, 0.02, 0.03])
-        w0 = b.build_kinematic("wall")
-        w1 = b.build_kinematic("wall")
-        w2 = b.build_kinematic("wall")
-        w3 = b.build_kinematic("wall")
+        # b = self._scene.create_actor_builder()
+        # b.add_box_collision(half_size=[0.12, 0.02, 0.03])
+        # b.add_box_visual(half_size=[0.12, 0.02, 0.03])
+        # w0 = b.build_kinematic("wall")
+        # w1 = b.build_kinematic("wall")
+        # w2 = b.build_kinematic("wall")
+        # w3 = b.build_kinematic("wall")
 
-        w0.set_pose(sapien.Pose([0, -0.1, 0.03]))
-        w1.set_pose(sapien.Pose([0, 0.1, 0.03]))
-        w2.set_pose(sapien.Pose([-0.1, 0, 0.03], [0.7071068, 0, 0, 0.7071068]))
-        w3.set_pose(sapien.Pose([0.1, 0, 0.03], [0.7071068, 0, 0, 0.7071068]))
-        self.walls = [w0, w1, w2, w3]
+        # w0.set_pose(sapien.Pose([0, -0.1, 0.03]))
+        # w1.set_pose(sapien.Pose([0, 0.1, 0.03]))
+        # w2.set_pose(sapien.Pose([-0.1, 0, 0.03], [0.7071068, 0, 0, 0.7071068]))
+        # w3.set_pose(sapien.Pose([0.1, 0, 0.03], [0.7071068, 0, 0, 0.7071068]))
+        # self.walls = [w0, w1, w2, w3]
 
         # beaker_file = os.path.join(
         #     PACKAGE_ASSET_DIR, "deformable_manipulation", "beaker.glb"
@@ -132,36 +132,36 @@ class scoopingEnv(MPMBaseEnv):
         # self.target_aabc = get_local_aabc_for_actor(self.target_beaker)
 
 
-        # bowl_dir = os.path.join(
-        #     PACKAGE_ASSET_DIR, "descriptions/feeding/meshes/bowl.STL"
-        #     )
-        # bowl_collision_dir = os.path.join(
-        #     PACKAGE_ASSET_DIR, "descriptions/feeding/meshes/bowl.STL.convex.stl"
-        #     )
-        # pose = sapien.Pose([0, 0, 0.07])
-        # b = self._scene.create_actor_builder()
-        # b.add_visual_from_file(bowl_dir, pose, scale=[0.002] * 3)
-        # b.add_collision_from_file(bowl_collision_dir, pose, scale=[0.002] * 3, density=300)
-        # self.source_container = b.build("bowl")
-        # self.source_aabb = get_local_axis_aligned_bbox_for_link(self.source_container)
+        bowl_dir = os.path.join(
+            PACKAGE_ASSET_DIR, "descriptions/feeding/meshes/bowl.STL"
+            )
+        bowl_collision_dir = os.path.join(
+            PACKAGE_ASSET_DIR, "descriptions/feeding/meshes/bowl.STL.convex.stl"
+            )
+        pose = sapien.Pose([0, 0, 0.07])
+        b = self._scene.create_actor_builder()
+        b.add_visual_from_file(bowl_dir, pose, scale=[0.002] * 3)
+        b.add_collision_from_file(bowl_collision_dir, pose, scale=[0.002] * 3, density=300)
+        self.source_container = b.build("bowl")
+        self.source_aabb = get_local_axis_aligned_bbox_for_link(self.source_container)
 
-        # spoon_dir = os.path.join(
-        #     PACKAGE_ASSET_DIR, "descriptions/feeding/meshes/spoon.STL"
-        #     )
-        # pose = sapien.Pose([0.0025, -0.1105, 0.2],[-0.007,-0.699,0.007,0.715])
-        # b = self._scene.create_actor_builder()
-        # b.add_visual_from_file(spoon_dir, pose, scale=[0.001] * 3)
-        # b.add_collision_from_file(spoon_dir, pose, scale=[0.001] * 3, density=300)
-        # self.source_container = b.build("spoon")
-        # self.source_aabb = get_local_axis_aligned_bbox_for_link(self.source_container)
+        spoon_dir = os.path.join(
+            PACKAGE_ASSET_DIR, "descriptions/feeding/meshes/spoon.STL"
+            )
+        pose = sapien.Pose([0.0025, -0.1105, 0.2],[-0.007,-0.699,0.007,0.715])
+        b = self._scene.create_actor_builder()
+        b.add_visual_from_file(spoon_dir, pose, scale=[0.001] * 3)
+        b.add_collision_from_file(spoon_dir, pose, scale=[0.001] * 3, density=300)
+        self.spoon = b.build("spoon")
+        self.source_aabb = get_local_axis_aligned_bbox_for_link(self.source_container)
 
-    # def _get_coupling_actors(
-    #     self,
-    # ):
-    #     return [
-    #         (self.source_container, "visual"),
-    #         (self.target_beaker, "visual"),
-    #     ]
+    def _get_coupling_actors(
+        self,
+    ):
+        return [
+            (self.source_container, "visual"),
+            (self.spoon, "visual"),
+        ]
 
     def _configure_agent(self):
         self._agent_cfg = xarm6DefaultConfig()
@@ -228,7 +228,7 @@ class scoopingEnv(MPMBaseEnv):
         )
 
         count = self.model_builder.add_mpm_from_height_map(
-            pos=(0.0, 0.0, 0.055),
+            pos=(0.0, 0.0, 0.08),
             vel=(0.0, 0.0, 0.0),
             dx=0.005,
             height_map=height_map,
@@ -242,12 +242,12 @@ class scoopingEnv(MPMBaseEnv):
         )
 
         self.model_builder.init_model_state(self.mpm_model, self.mpm_states)
-        self.mpm_model.struct.static_ke = 100.0
+        self.mpm_model.struct.static_ke = 1.0
         self.mpm_model.struct.static_kd = 0.0
         self.mpm_model.struct.static_mu = 1.0
         self.mpm_model.struct.static_ka = 0.0
 
-        self.mpm_model.struct.body_ke = 100.0
+        self.mpm_model.struct.body_ke = 1.0
         self.mpm_model.struct.body_kd = 0.0
         self.mpm_model.struct.body_mu = 1.0
         self.mpm_model.struct.body_ka = 0.0
