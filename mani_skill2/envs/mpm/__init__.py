@@ -5,3 +5,5 @@ from . import pour_env
 from . import hang_env
 from . import write_env
 from . import pinch_env
+from . import pour_scoop
+from . import myexcavate_env
