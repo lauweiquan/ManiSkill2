@@ -6,7 +6,7 @@ from mani_skill2.sensors.camera import CameraConfig
 
 class xarm6DefaultConfig:
     def __init__(self) -> None:
-        self.urdf_path = "{PACKAGE_ASSET_DIR}/descriptions/xarm_description/xarm6_with_gripper_ft_sensor.urdf"
+        self.urdf_path = "{PACKAGE_ASSET_DIR}/descriptions/xarm_description/xarm6_with_gripper.urdf"
         self.urdf_config = dict(
             _materials=dict(
                 gripper=dict(static_friction=2.0, dynamic_friction=2.0, restitution=0.0)
