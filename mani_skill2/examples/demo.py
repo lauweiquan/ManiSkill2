@@ -32,7 +32,7 @@ class PlanningDemo():
         # Load URDF
         loader: sapien.URDFLoader = self.scene.create_urdf_loader()
         loader.fix_root_link = True
-        self.robot: sapien.Articulation = loader.load("../assets/descriptions/panda_v2.urdf")
+        self.robot: sapien.Articulation = loader.load("mani_skill2/assets/descriptions/panda_v2.urdf")
         self.robot.set_root_pose(sapien.Pose([0, 0, 0], [1, 0, 0, 0]))
 
         # Set initial joint positions
@@ -75,8 +75,8 @@ class PlanningDemo():
         link_names = [link.get_name() for link in self.robot.get_links()]
         joint_names = [joint.get_name() for joint in self.robot.get_active_joints()]
         self.planner = mplib.Planner(
-            urdf="../assets/robot/panda/panda.urdf",
-            srdf="../assets/robot/panda/panda.srdf",
+            urdf="mani_skill2/assets/descriptions/panda_v2.urdf",
+            srdf="mani_skill2/assets/descriptions/panda_v2.srdf",
             user_link_names=link_names,
             user_joint_names=joint_names,
             move_group="panda_hand",
