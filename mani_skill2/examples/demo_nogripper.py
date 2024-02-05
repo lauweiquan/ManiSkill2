@@ -32,11 +32,11 @@ class PlanningDemo():
         # Load URDF
         loader: sapien.URDFLoader = self.scene.create_urdf_loader()
         loader.fix_root_link = True
-        self.robot: sapien.Articulation = loader.load("mani_skill2/assets/descriptions/panda_v2.urdf")
+        self.robot: sapien.Articulation = loader.load("mani_skill2/assets/descriptions/xarm_description/xarm6.urdf")
         self.robot.set_root_pose(sapien.Pose([0, 0, 0], [1, 0, 0, 0]))
 
         # Set initial joint positions
-        init_qpos = [0, 0.19634954084936207, 0.0, -2.617993877991494, 0.0, 2.941592653589793, 0.7853981633974483, 0, 0]
+        init_qpos = [-0.139, 0.417, -1.811, -0.035, 1.442, -0.176]
         self.robot.set_qpos(init_qpos)
 
         self.active_joints = self.robot.get_active_joints()
@@ -75,13 +75,13 @@ class PlanningDemo():
         link_names = [link.get_name() for link in self.robot.get_links()]
         joint_names = [joint.get_name() for joint in self.robot.get_active_joints()]
         self.planner = mplib.Planner(
-            urdf="mani_skill2/assets/descriptions/panda_v2.urdf",
-            srdf="mani_skill2/assets/descriptions/panda_v2.srdf",
+            urdf="mani_skill2/assets/descriptions/xarm_description/xarm6.urdf",
+            srdf="mani_skill2/assets/descriptions/xarm_description/xarm6.srdf",
             user_link_names=link_names,
             user_joint_names=joint_names,
-            move_group="panda_hand",
-            joint_vel_limits=np.ones(7),
-            joint_acc_limits=np.ones(7))
+            move_group="link_eef",
+            joint_vel_limits=np.ones(6),
+            joint_acc_limits=np.ones(6))
 
     def follow_path(self, result):
         n_step = result['position'].shape[0]
@@ -90,7 +90,7 @@ class PlanningDemo():
                 gravity=True, 
                 coriolis_and_centrifugal=True)
             self.robot.set_qf(qf)
-            for j in range(7):
+            for j in range(6):
                 self.active_joints[j].set_drive_target(result['position'][i][j])
                 self.active_joints[j].set_drive_velocity_target(result['velocity'][i][j])
             self.scene.step()
@@ -124,7 +124,7 @@ class PlanningDemo():
                 self.scene.update_render()
                 self.viewer.render()
 
-    def move_to_pose_with_RRTConnect(self, pose):
+    def move_to_pose_with_RRT(self, pose):
         result = self.planner.plan(pose, self.robot.get_qpos(), time_step=1/250)
         if result['status'] != "Success":
             print(result['status'])
@@ -136,17 +136,14 @@ class PlanningDemo():
         qpos = self.robot.get_qpos()
         print(qpos)
         result = self.planner.plan_screw(pose, self.robot.get_qpos(), time_step=1/250)
-        print(result['status'])
-        
-#          0.          0.19634955  0.         -2.6179938   0.          2.9415927
-#   0.7853982   0.          0.        
+        print(result)
         if result['status'] != "Success":
             result = self.planner.plan(pose, self.robot.get_qpos(), time_step=1/250)
             if result['status'] != "Success":
                 print(result['status'])
                 return -1 
         self.follow_path(result)
-        print(pose, "\n", qpos)
+        print(qpos)
         return 0
     
     def move_to_pose(self, pose, with_screw):
@@ -156,13 +153,15 @@ class PlanningDemo():
             return self.move_to_pose_with_RRT(pose)
 
     def demo(self, with_screw = True):
-        poses = [[0.4, 0.3, 0.12, 0, 1, 0, 0]
+        poses = [[0.4, 0.3, 0.12, 0, 1, 0, 0],
                 [0.2, -0.3, 0.08, 0, 1, 0, 0],
-                [0.6, 0.1, 0.14, 0, 1, 0, 0]
+                [0.5, 0.3, 0.16, 0, 1, 0, 0]
                 ]
-        for i in range(1):
+        for i in range(3):
             pose = poses[i]
+            # print(pose[2])
             pose[2] += 0.2
+            # print(pose)
             self.move_to_pose(pose, with_screw)
             self.open_gripper()
             pose[2] -= 0.12

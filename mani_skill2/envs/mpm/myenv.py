@@ -347,9 +347,9 @@ class CustomEnv(MPMBaseEnv):
             srdf="mani_skill2/assets/descriptions/xarm_description/xarm6_with_gripper.srdf",
             user_link_names=link_names,
             user_joint_names=joint_names,
-            move_group="drive_joint",
-            joint_vel_limits=np.ones(7),
-            joint_acc_limits=np.ones(7))
+            move_group="xarm_gripper_base_link",
+            joint_vel_limits=np.ones(6),
+            joint_acc_limits=np.ones(6))
 
     def follow_path(self, result):
         n_step = result['position'].shape[0]
@@ -437,6 +437,7 @@ class CustomEnv(MPMBaseEnv):
             self.open_gripper()
             pose[2] += 0.12
             self.move_to_pose(pose, with_screw)
+            print("executed")
 
 if __name__ == "__main__":
     env = CustomEnv(reward_mode="dense")
@@ -445,6 +446,7 @@ if __name__ == "__main__":
 
     a = env.get_state()
     env.set_state(a)
+    env.setup_planner()
     env.demo()
 
     for i in range(100):
