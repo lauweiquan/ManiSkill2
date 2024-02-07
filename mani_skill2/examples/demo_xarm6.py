@@ -86,7 +86,9 @@ class PlanningDemo():
         # print(joint_names)
 
     def follow_path(self, result):
+        print(result['position'])
         n_step = result['position'].shape[0]
+        # print(n_step) #number of steps
         for i in range(n_step):  
             qf = self.robot.compute_passive_force(
                 gravity=True, 
@@ -135,23 +137,23 @@ class PlanningDemo():
     def move_to_pose_with_RRT(self, pose):
         result = self.planner.plan(pose, self.robot.get_qpos(), time_step=1/250)
         if result['status'] != "Success":
-            print(result['status'])
+            # print(result['status'])
             return -1
         self.follow_path(result)
         return 0
 
     def move_to_pose_with_screw(self, pose):
         qpos = self.robot.get_qpos()
-        print(qpos)
+        # print(qpos)
         result = self.planner.plan_screw(pose, self.robot.get_qpos(), time_step=1/250)
-        print(result)
+        # print(result)
         if result['status'] != "Success":
             result = self.planner.plan_qpos_to_pose(pose, self.robot.get_qpos(), time_step=1/250)
             if result['status'] != "Success":
-                print(result['status'])
+                # print(result['status'])
                 return -1 
         self.follow_path(result)
-        print(qpos)
+        # print(qpos)
         return 0
     
     def move_to_pose(self, pose, with_screw):
@@ -171,19 +173,19 @@ class PlanningDemo():
             pose[2] += 0.2
             # print(pose)
             self.move_to_pose(pose, with_screw)
-            self.open_gripper()
-            pose[2] -= 0.12
-            self.move_to_pose(pose, with_screw)
-            self.close_gripper()
-            pose[2] += 0.12
-            self.move_to_pose(pose, with_screw)
-            pose[0] += 0.1
-            self.move_to_pose(pose, with_screw)
-            pose[2] -= 0.12
-            self.move_to_pose(pose, with_screw)
-            self.open_gripper()
-            pose[2] += 0.12
-            self.move_to_pose(pose, with_screw)
+            # self.open_gripper()
+            # pose[2] -= 0.12
+            # self.move_to_pose(pose, with_screw)
+            # self.close_gripper()
+            # pose[2] += 0.12
+            # self.move_to_pose(pose, with_screw)
+            # pose[0] += 0.1
+            # self.move_to_pose(pose, with_screw)
+            # pose[2] -= 0.12
+            # self.move_to_pose(pose, with_screw)
+            # self.open_gripper()
+            # pose[2] += 0.12
+            # self.move_to_pose(pose, with_screw)
 
 if __name__ == '__main__':
     demo = PlanningDemo()

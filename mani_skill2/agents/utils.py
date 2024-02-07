@@ -40,8 +40,9 @@ def flatten_action_spaces(action_spaces: Dict[str, spaces.Space]):
     high = []
     action_mapping = OrderedDict()
     offset = 0
-
+    # print(action_spaces.items())
     for action_name, action_space in action_spaces.items():
+        # print(action_space)
         if isinstance(action_space, spaces.Box):
             assert len(action_space.shape) == 1, (action_name, action_space)
         else:
@@ -60,5 +61,5 @@ def flatten_action_spaces(action_spaces: Dict[str, spaces.Space]):
         shape=[sum(action_dims)],
         dtype=np.float32,
     )
-
+    # print(flat_action_space)
     return flat_action_space, action_mapping

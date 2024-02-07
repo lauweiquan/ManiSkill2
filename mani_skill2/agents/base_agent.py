@@ -159,6 +159,7 @@ class BaseAgent:
         self.set_control_mode(self._default_control_mode)
 
     def set_action(self, action):
+        # print(action)
         if np.isnan(action).any(): raise ValueError("Action cannot be NaN. Environment received:", action)
         self.controller.set_action(action)
 

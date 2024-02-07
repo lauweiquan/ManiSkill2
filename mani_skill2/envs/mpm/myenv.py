@@ -36,7 +36,7 @@ from mani_skill2.utils.sapien_utils import (  # import various useful utilities 
     look_at,
 )
 from mani_skill2.envs.mpm.utils import actor2meshes
-
+from mani_skill2.utils.scooping_trajectory import SCOOPING_JOINT_TRAJ
 
 @register_env("myenv", max_episode_steps=250)
 class CustomEnv(MPMBaseEnv):
@@ -242,7 +242,7 @@ class CustomEnv(MPMBaseEnv):
         return [
             (self.source_container, "visual"),
             # (self.spoon, "visual"),
-        ] +[(l, "visual") for l in self.agent.robot.get_links() if l.name == "spoon"]
+        ] + [(l, "visual") for l in self.agent.robot.get_links() if l.name == "spoon"]
 
     def _configure_agent(self):
         self._agent_cfg = xarm6DefaultConfig()
@@ -353,13 +353,14 @@ class CustomEnv(MPMBaseEnv):
             joint_acc_limits=np.ones(6))
 
     def follow_path(self, result):
+        print(result['position'])
         n_step = result['position'].shape[0] #step this
         for i in range(n_step):  
             qf = self.robot.compute_passive_force(
                 gravity=True, 
                 coriolis_and_centrifugal=True)
             self.robot.set_qf(qf)
-            for j in range(7):
+            for j in range(6):
                 self.active_joints[j].set_drive_target(result['position'][i][j])
                 self.active_joints[j].set_drive_velocity_target(result['velocity'][i][j])
             self.scene.step()
@@ -440,17 +441,24 @@ class CustomEnv(MPMBaseEnv):
             self.move_to_pose(pose, with_screw)
             print("executed")
 
+
+
 if __name__ == "__main__":
-    env = CustomEnv(reward_mode="dense")
+    env = CustomEnv(
+        reward_mode="dense",
+        render_mode="human")
     env.reset()
     env.agent.set_control_mode("pd_ee_delta_pose")
 
     a = env.get_state()
     env.set_state(a)
-    env.setup_planner()
-    env.demo()
+    # env.setup_planner()
+    # env.demo()
 
-    for i in range(100):
-        env.step(None)
+    n = len(SCOOPING_JOINT_TRAJ)
+
+    for i in range(n):
+        print(i)
+        env.step(SCOOPING_JOINT_TRAJ[i])
         env.render()
         

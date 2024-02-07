@@ -236,7 +236,10 @@ class CombinedController(DictController):
 
     def set_action(self, action: np.ndarray):
         # Sanity check
+        # print(action)
+        # print(self.action_space)
         action_dim = self.action_space.shape[0]
+        # print(action_dim)
         assert action.shape == (action_dim,), (action.shape, action_dim)
 
         for uid, controller in self.controllers.items():
