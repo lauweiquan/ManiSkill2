@@ -6,7 +6,7 @@ from mani_skill2.sensors.camera import CameraConfig
 
 class xarm6DefaultConfig:
     def __init__(self) -> None:
-        self.urdf_path = "{PACKAGE_ASSET_DIR}/descriptions/xarm_description/xarm6_with_gripper.urdf"
+        self.urdf_path = "{PACKAGE_ASSET_DIR}/descriptions/xarm_description/xarm6_with_gripper_spoon.urdf"
         self.urdf_config = dict(
             _materials=dict(
                 gripper=dict(static_friction=2.0, dynamic_friction=2.0, restitution=0.0)
@@ -28,24 +28,24 @@ class xarm6DefaultConfig:
             "joint4",
             "joint5",
             "joint6",
-            "drive_joint",
-            "left_inner_knuckle_joint",
-            "right_outer_knuckle_joint",
-            "right_inner_knuckle_joint",
         ]
         self.arm_stiffness = 1e3
         self.arm_damping = 1e2
         self.arm_force_limit = 100
 
         self.gripper_joint_names = [
+            "drive_joint",
             "left_finger_joint",
+            "left_inner_knuckle_joint",
+            "right_outer_knuckle_joint",
             "right_finger_joint",
+            "right_inner_knuckle_joint",
         ]
         self.gripper_stiffness = 1e3
         self.gripper_damping = 1e2
         self.gripper_force_limit = 100
 
-        self.ee_link_name = "link_tcp"
+        self.ee_link_name = "link_eef"
 
     @property
     def controllers(self):

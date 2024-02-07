@@ -74,7 +74,6 @@ class PlanningDemo():
     def setup_planner(self):
         link_names = [link.get_name() for link in self.robot.get_links()]
         joint_names = [joint.get_name() for joint in self.robot.get_active_joints()]
-        print(joint_names)
         self.planner = mplib.Planner(
             urdf="mani_skill2/assets/descriptions/xarm_description/xarm6_with_gripper.urdf",
             srdf="mani_skill2/assets/descriptions/xarm_description/xarm6_with_gripper.srdf",
@@ -83,6 +82,8 @@ class PlanningDemo():
             move_group="xarm_gripper_base_link",
             joint_vel_limits=np.ones(6),
             joint_acc_limits=np.ones(6))
+        # print(link_names)
+        # print(joint_names)
 
     def follow_path(self, result):
         n_step = result['position'].shape[0]
@@ -103,8 +104,8 @@ class PlanningDemo():
         for joint in self.active_joints[-6:]:
             # if joint.get_name() in ["right_finger_joint", "left_finger_joint"]:
                 # print(joint.get_name())
-                # joint.set_drive_target(-0.4)
-            joint.set_drive_target(0.8)
+                # joint.set_drive_target(0.85)
+            joint.set_drive_target(0)
         for i in range(100): 
             qf = self.robot.compute_passive_force(
                 gravity=True, 
@@ -120,7 +121,7 @@ class PlanningDemo():
             # if joint.get_name() in ["right_finger_joint", "left_finger_joint"]:
                 # print(joint.get_name())
                 # joint.set_drive_target(0)
-            joint.set_drive_target(0)
+            joint.set_drive_target(0.85)
         for i in range(100):  
             qf = self.robot.compute_passive_force(
                 gravity=True, 
@@ -160,9 +161,9 @@ class PlanningDemo():
             return self.move_to_pose_with_RRT(pose)
 
     def demo(self, with_screw = True):
-        poses = [[0.4, 0.3, 0.12, 0, 1, 0, 0],
+        poses = [[0.35, 0.325, 0.14, 0, 1, 0, 0],
                 [0.2, -0.3, 0.08, 0, 1, 0, 0],
-                [0.6, 0.1, 0.14, 0, 1, 0, 0]
+                [0.6, 0.15, 0.14, 0, 1, 0, 0]
                 ]
         for i in range(3):
             pose = poses[i]

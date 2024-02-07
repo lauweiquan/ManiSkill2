@@ -446,6 +446,8 @@ def _main(args, proc_id: int = 0, num_procs=1, pbar=None):
                     if pbar is not None:
                         pbar.update()
                     _, _, _, _, info = env.step(a)
+                    print("printing a")
+                    print(a)
                     if args.vis:
                         env.render_human()
                     if args.use_env_states:

@@ -85,7 +85,7 @@ class CustomEnv(MPMBaseEnv):
         )
 
         count = self.model_builder.add_mpm_from_height_map(
-            pos=(0.0, 0.0, 0.06),
+            pos=(0.0, 0.0, 0.05),
             vel=(0.0, 0.0, 0.0),
             dx=0.005,
             height_map=height_map,
@@ -151,9 +151,10 @@ class CustomEnv(MPMBaseEnv):
         # here you initialize the agent/robot. This usually involves setting the joint position of the robot. We provide
         # some default code below for panda and xmate3 set the robot to a "rest" position with a little bit of noise for randomization
 
-        qpos = np.array([-0.139, 0.417, -1.811, -0.035, 1.442, -0.176, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85])
-        qpos[:-1] += self._episode_rng.normal(0, 0.02, len(qpos) - 1)
-        qpos[-1] += self._episode_rng.normal(0, 0.2, 1)
+        qpos = np.array([-0.139, -0.017, -1.788, -0.035, 1.534, -0.176, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85])
+        # randomise location of intial joint position
+        # qpos[:-1] += self._episode_rng.normal(0, 0.02, len(qpos) - 1)
+        # qpos[-1] += self._episode_rng.normal(0, 0.2, 1)
         self.agent.reset(qpos)
         self.agent.robot.set_pose(sapien.Pose([-0.56, 0, 0]))
         self.home_ee = np.array([0.0, 0.0, self.target_height])
@@ -198,13 +199,13 @@ class CustomEnv(MPMBaseEnv):
             config=self._agent_cfg,
         )
         self.grasp_site: sapien.Link = get_entity_by_name(
-            self.agent.robot.get_links(), "drive_joint"
+            self.agent.robot.get_links(), "xarm_gripper_base_link"
         )
         self.lfinger = get_entity_by_name(
-            self.agent.robot.get_links(), "left_inner_knuckle_joint"
+            self.agent.robot.get_links(), "left_finger"
         )
         self.rfinger = get_entity_by_name(
-            self.agent.robot.get_links(), "right_inner_knuckle_joint"
+            self.agent.robot.get_links(), "right_finger"
         )
 
     def _load_actors(self):
@@ -230,8 +231,8 @@ class CustomEnv(MPMBaseEnv):
         #     )
         # pose = sapien.Pose([0.0025, -0.1105, 0.2],[-0.007,-0.699,0.007,0.715])
         # b = self._scene.create_actor_builder()
-        # b.add_visual_from_file(spoon_dir, pose, scale=[0.001] * 3)
-        # b.add_collision_from_file(spoon_collision_dir, pose, scale=[0.001] * 3, density=300)
+        # b.add_visual_from_file(spoon_dir, pose, scale=[0.002] * 3)
+        # b.add_collision_from_file(spoon_collision_dir, pose, scale=[0.002] * 3, density=300)
         # self.spoon = b.build("spoon")
 
 
@@ -241,7 +242,7 @@ class CustomEnv(MPMBaseEnv):
         return [
             (self.source_container, "visual"),
             # (self.spoon, "visual"),
-        ]
+        ] +[(l, "visual") for l in self.agent.robot.get_links() if l.name == "spoon"]
 
     def _configure_agent(self):
         self._agent_cfg = xarm6DefaultConfig()
@@ -352,7 +353,7 @@ class CustomEnv(MPMBaseEnv):
             joint_acc_limits=np.ones(6))
 
     def follow_path(self, result):
-        n_step = result['position'].shape[0]
+        n_step = result['position'].shape[0] #step this
         for i in range(n_step):  
             qf = self.robot.compute_passive_force(
                 gravity=True, 
@@ -417,9 +418,9 @@ class CustomEnv(MPMBaseEnv):
             return self.move_to_pose_with_RRT(pose)
 
     def demo(self, with_screw = True):
-        poses = [[0.4, 0.3, 0.12, 0, 1, 0, 0],
+        poses = [[0.35, 0.325, 0.14, 0, 1, 0, 0],
                 [0.2, -0.3, 0.08, 0, 1, 0, 0],
-                [0.6, 0.1, 0.14, 0, 1, 0, 0]]
+                [0.6, 0.15, 0.14, 0, 1, 0, 0]]
         for i in range(3):
             pose = poses[i]
             pose[2] += 0.2

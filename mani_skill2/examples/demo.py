@@ -156,11 +156,11 @@ class PlanningDemo():
             return self.move_to_pose_with_RRT(pose)
 
     def demo(self, with_screw = True):
-        poses = [[0.4, 0.3, 0.12, 0, 1, 0, 0]
+        poses = [[0.4, 0.3, 0.12, 0, 1, 0, 0],
                 [0.2, -0.3, 0.08, 0, 1, 0, 0],
-                [0.6, 0.1, 0.14, 0, 1, 0, 0]
+                [0.6, 0.1, 0.14, 0, 1, 0, 0],
                 ]
-        for i in range(1):
+        for i in range(3):
             pose = poses[i]
             pose[2] += 0.2
             self.move_to_pose(pose, with_screw)
