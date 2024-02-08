@@ -26,7 +26,7 @@ from mani_skill2.utils.common import clip_and_scale_action, inv_scale_action
 from mani_skill2.utils.io_utils import load_json
 from mani_skill2.utils.sapien_utils import get_entity_by_name
 from mani_skill2.utils.wrappers import RecordEpisode
-
+from mani_skill2.utils.scooping_trajectory import SCOOPING_JOINT_TRAJ
 
 def qpos_to_pd_joint_delta_pos(controller: PDJointPosController, qpos):
     assert type(controller) == PDJointPosController
@@ -439,10 +439,10 @@ def _main(args, proc_id: int = 0, num_procs=1, pbar=None):
 
             # Without conversion between control modes
             if target_control_mode is None:
-                n = len(ori_actions)
+                n = len(SCOOPING_JOINT_TRAJ)
                 if pbar is not None:
                     pbar.reset(total=n)
-                for t, a in enumerate(ori_actions):
+                for t, a in enumerate(SCOOPING_JOINT_TRAJ):
                     if pbar is not None:
                         pbar.update()
                     _, _, _, _, info = env.step(a)
@@ -457,7 +457,7 @@ def _main(args, proc_id: int = 0, num_procs=1, pbar=None):
             elif ori_control_mode == "pd_joint_pos":
                 info = from_pd_joint_pos(
                     target_control_mode,
-                    ori_actions,
+                    SCOOPING_JOINT_TRAJ,
                     ori_env,
                     env,
                     render=args.vis,
