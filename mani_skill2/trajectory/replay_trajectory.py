@@ -26,7 +26,9 @@ from mani_skill2.utils.common import clip_and_scale_action, inv_scale_action
 from mani_skill2.utils.io_utils import load_json
 from mani_skill2.utils.sapien_utils import get_entity_by_name
 from mani_skill2.utils.wrappers import RecordEpisode
-from mani_skill2.utils.scooping_trajectory import SCOOPING_JOINT_TRAJ
+from mani_skill2.utils.scooping_trajectory import SCOOPING_JOINT_TRAJ, SCOOPING_CART_TRAJ, EXCAVATE_TRAJ, EXCAVATE_EE_TRAJ
+
+from scipy.spatial.transform import Rotation
 
 def qpos_to_pd_joint_delta_pos(controller: PDJointPosController, qpos):
     assert type(controller) == PDJointPosController
@@ -122,7 +124,8 @@ def from_pd_joint_pos_to_ee(
 
         # Keep the joint positions with all DoF
         full_qpos = ori_controller.articulation.get_qpos()
-
+        # print(full_qpos)
+        # print(ori_action)
         ori_env.step(ori_action)
 
         # Use target joint positions for arm only
@@ -160,6 +163,7 @@ def from_pd_joint_pos_to_ee(
             output_action = controller.from_action_dict(output_action_dict)
 
             _, _, _, _, info = env.step(output_action)
+            print(output_action)
             if render:
                 env.render_human()
 
@@ -197,7 +201,7 @@ def from_pd_joint_pos(
         ori_action = ori_actions[t]
         ori_action_dict = ori_controller.to_action_dict(ori_action)
         output_action_dict = ori_action_dict.copy()  # do not in-place modify
-
+        # print(ori_action)
         ori_env.step(ori_action)
         flag = True
 
@@ -348,6 +352,7 @@ def _main(args, proc_id: int = 0, num_procs=1, pbar=None):
     # Create a twin env with the original kwargs
     if args.target_control_mode is not None:
         ori_env = gym.make(env_id, **ori_env_kwargs)
+        # ori_controller: CombinedController = ori_env.agent.controller
     else:
         ori_env = None
 
@@ -398,9 +403,11 @@ def _main(args, proc_id: int = 0, num_procs=1, pbar=None):
     n_ep = len(episodes)
     inds = np.arange(n_ep)
     inds = np.array_split(inds, num_procs)[proc_id]
+    
 
     # Replay
     for ind in inds:
+        # input()
         ep = episodes[ind]
         episode_id = ep["episode_id"]
         traj_id = f"traj_{episode_id}"
@@ -429,7 +436,35 @@ def _main(args, proc_id: int = 0, num_procs=1, pbar=None):
                 env.render_human()
 
             # Original actions to replay
-            ori_actions = ori_h5_file[traj_id]["actions"][:]
+            ori_actions = SCOOPING_CART_TRAJ
+            # for ori in ori_h5_file[traj_id]["actions"][:]:
+            #     print(list(ori),",")
+            # print(ori_actions)
+
+            # np_array = []
+
+            #to convert from quaternion to rpy
+            # for pose in ori_actions:
+            #     quat_df = [pose[-3], pose[-2], pose[-1], pose[-4]]
+            #     rot = Rotation.from_quat(quat_df)
+            #     rot_euler = rot.as_euler('xyz', degrees=False)
+                
+            #     #euler = Rotation.from_euler('xyz', rot_euler, degrees=False)
+            #     #euler_df = euler.as_quat()
+            #     #print(quat_df)
+            #     #print(euler_df)
+                
+            #     p = np.array([pose[0], pose[1], pose[2], rot_euler[0], rot_euler[1], rot_euler[2]])
+            #     np_array.append(p)
+            #     print(list(p),",")
+
+            #convert to delta
+            # for t, a in enumerate(ori_actions):
+            #         if t == 0:
+            #             b = a
+            #         else:
+            #             b = a - ori_actions[t-1]
+            #         print(list(b),",")
 
             # Original env states to replay
             if args.use_env_states:
@@ -439,15 +474,17 @@ def _main(args, proc_id: int = 0, num_procs=1, pbar=None):
 
             # Without conversion between control modes
             if target_control_mode is None:
-                n = len(SCOOPING_JOINT_TRAJ)
+                n = len(ori_actions)
                 if pbar is not None:
                     pbar.reset(total=n)
-                for t, a in enumerate(SCOOPING_JOINT_TRAJ):
+                for t, a in enumerate(ori_actions):
                     if pbar is not None:
                         pbar.update()
                     _, _, _, _, info = env.step(a)
-                    print("printing a")
-                    print(a)
+                    # print("printing a")
+                    # print(a)
+                    # full_qpos = ori_controller.articulation.get_qpos()
+                    # print(full_qpos)
                     if args.vis:
                         env.render_human()
                     if args.use_env_states:
@@ -457,7 +494,7 @@ def _main(args, proc_id: int = 0, num_procs=1, pbar=None):
             elif ori_control_mode == "pd_joint_pos":
                 info = from_pd_joint_pos(
                     target_control_mode,
-                    SCOOPING_JOINT_TRAJ,
+                    ori_actions,
                     ori_env,
                     env,
                     render=args.vis,

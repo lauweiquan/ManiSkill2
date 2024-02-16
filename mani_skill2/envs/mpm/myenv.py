@@ -85,7 +85,7 @@ class CustomEnv(MPMBaseEnv):
         )
 
         count = self.model_builder.add_mpm_from_height_map(
-            pos=(0.0, 0.0, 0.05),
+            pos=(-0.153, 0.0, 0.05),
             vel=(0.0, 0.0, 0.0),
             dx=0.005,
             height_map=height_map,
@@ -151,7 +151,7 @@ class CustomEnv(MPMBaseEnv):
         # here you initialize the agent/robot. This usually involves setting the joint position of the robot. We provide
         # some default code below for panda and xmate3 set the robot to a "rest" position with a little bit of noise for randomization
 
-        qpos = np.array([-0.139, -0.017, -1.788, -0.035, 1.534, -0.176, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85])
+        qpos = np.array([1.3060075393995658, -0.02468791861552432, -1.1424824215453073, -0.8894981281919003, 1.5227398183384366, 1.73813112889074, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85])
         # randomise location of intial joint position
         # qpos[:-1] += self._episode_rng.normal(0, 0.02, len(qpos) - 1)
         # qpos[-1] += self._episode_rng.normal(0, 0.2, 1)
@@ -217,7 +217,7 @@ class CustomEnv(MPMBaseEnv):
         bowl_collision_dir = os.path.join(
             PACKAGE_ASSET_DIR, "descriptions/feeding/meshes/bowl.STL.convex.stl"
             )
-        pose = sapien.Pose([0, 0, 0.07])
+        pose = sapien.Pose([-0.153, 0, 0.07])
         b = self._scene.create_actor_builder()
         b.add_visual_from_file(bowl_dir, pose, scale=[0.002] * 3)
         b.add_collision_from_file(bowl_collision_dir, pose, scale=[0.002] * 3, density=300)

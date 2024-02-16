@@ -68,6 +68,7 @@ class BaseAgent:
         # Controller
         self.controller_configs = self.config.controllers
         self.supported_control_modes = list(self.controller_configs.keys())
+        # print(self.supported_control_modes)
         if control_mode is None:
             control_mode = self.supported_control_modes[0]
         # The control mode after reset for consistency

@@ -88,11 +88,13 @@ class PDEEPosController(PDJointPosController):
         return target_pose
 
     def set_action(self, action: np.ndarray):
+        # print(action)
         action = self._preprocess_action(action)
+        
 
         self._step = 0
         self._start_qpos = self.qpos
-
+        # print(self.qpos)
         if self.config.use_target:
             prev_ee_pose_at_base = self._target_pose
         else:

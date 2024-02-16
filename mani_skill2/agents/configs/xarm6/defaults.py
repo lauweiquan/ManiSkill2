@@ -45,7 +45,7 @@ class xarm6DefaultConfig:
         self.gripper_damping = 1e2
         self.gripper_force_limit = 100
 
-        self.ee_link_name = "link_eef"
+        self.ee_link_name = "link_tcp"
 
     @property
     def controllers(self):
