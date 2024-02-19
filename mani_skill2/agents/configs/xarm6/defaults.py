@@ -1,3 +1,5 @@
+import numpy as np
+
 from copy import deepcopy
 
 from mani_skill2.agents.controllers import *
@@ -45,7 +47,7 @@ class xarm6DefaultConfig:
         self.gripper_damping = 1e2
         self.gripper_force_limit = 100
 
-        self.ee_link_name = "link_tcp"
+        self.ee_link_name = "link_eef"
 
     @property
     def controllers(self):
@@ -74,6 +76,19 @@ class xarm6DefaultConfig:
         arm_pd_joint_target_delta_pos.use_target = True
 
         # PD ee position
+        arm_pd_ee_pose = PDEEPoseControllerConfig(
+            self.arm_joint_names,
+            -100,
+            100,
+            np.pi,
+            self.arm_stiffness,
+            self.arm_damping,
+            self.arm_force_limit,
+            ee_link=self.ee_link_name,
+            use_delta=False,
+            frame="base",
+            normalize_action=False,
+        )
         arm_pd_ee_delta_pos = PDEEPosControllerConfig(
             self.arm_joint_names,
             -0.1,
@@ -152,6 +167,9 @@ class xarm6DefaultConfig:
             ),
             pd_joint_pos=dict(arm=arm_pd_joint_pos, gripper=gripper_pd_joint_pos),
             pd_ee_delta_pos=dict(arm=arm_pd_ee_delta_pos, gripper=gripper_pd_joint_pos),
+            pd_ee_pose = dict(
+            arm=arm_pd_ee_pose, gripper=gripper_pd_joint_pos
+            ),
             pd_ee_delta_pose=dict(
                 arm=arm_pd_ee_delta_pose, gripper=gripper_pd_joint_pos
             ),

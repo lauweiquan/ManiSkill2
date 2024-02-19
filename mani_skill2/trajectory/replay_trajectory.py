@@ -407,7 +407,7 @@ def _main(args, proc_id: int = 0, num_procs=1, pbar=None):
 
     # Replay
     for ind in inds:
-        # input()
+        input()
         ep = episodes[ind]
         episode_id = ep["episode_id"]
         traj_id = f"traj_{episode_id}"

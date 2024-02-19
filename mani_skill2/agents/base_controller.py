@@ -181,6 +181,8 @@ class DictController(BaseController):
 
     def _assert_fully_actuated(self):
         active_joints = self.articulation.get_active_joints()
+        # print("active_joints:", [x.name for x in active_joints])
+        # print("controlled_joints:", [x.name for x in self.joints])
         if len(active_joints) != len(self.joints) or set(active_joints) != set(
             self.joints
         ):
@@ -227,19 +229,22 @@ class DictController(BaseController):
 
 class CombinedController(DictController):
     """A flat/combined view of multiple controllers."""
-
+    
     def _initialize_action_space(self):
         super()._initialize_action_space()
+        # print(self.action_space)
         self.action_space, self.action_mapping = flatten_action_spaces(
             self.action_space.spaces
         )
 
     def set_action(self, action: np.ndarray):
         # Sanity check
+        action_dim = self.action_space.shape[0]
         # print(action)
         # print(self.action_space)
-        action_dim = self.action_space.shape[0]
+        # print("checcccccccccccccccccccccccccccccccck")
         # print(action_dim)
+        # print(action.shape)
         assert action.shape == (action_dim,), (action.shape, action_dim)
 
         for uid, controller in self.controllers.items():

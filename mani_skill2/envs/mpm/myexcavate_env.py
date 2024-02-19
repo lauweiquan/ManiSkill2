@@ -4,7 +4,7 @@ import numpy as np
 import sapien.core as sapien
 from transforms3d.euler import euler2quat
 
-from mani_skill2.agents.configs.panda.variants import PandaBucketConfig
+from mani_skill2.agents.configs.panda.variants import PandaSpoonConfig
 from mani_skill2.agents.robots.panda import Panda
 from mani_skill2.envs.mpm import perlin
 from mani_skill2.envs.mpm.base_env import MPMBaseEnv
@@ -13,16 +13,6 @@ from mani_skill2.sensors.camera import CameraConfig
 from mani_skill2.utils.registration import register_env
 from mani_skill2.utils.sapien_utils import get_entity_by_name, vectorize_pose
 
-from mani_skill2.agents.configs.xarm6.defaults import xarm6DefaultConfig
-from mani_skill2.agents.robots.xarm6 import xarm6
-
-import os
-from collections import OrderedDict
-from mani_skill2 import PACKAGE_ASSET_DIR
-from mani_skill2.utils.geometry import (
-    get_local_aabc_for_actor,
-    get_local_axis_aligned_bbox_for_link,
-)
 
 @register_env("myExcavate-v0", max_episode_steps=250)
 class ExcavateEnv(MPMBaseEnv):
@@ -66,7 +56,7 @@ class ExcavateEnv(MPMBaseEnv):
         )
 
         count = self.model_builder.add_mpm_from_height_map(
-            pos=(0.0, 0.0, 0.01),
+            pos=(0.0, 0.0, -0.0),
             vel=(0.0, 0.0, 0.0),
             dx=0.005,
             height_map=height_map,
@@ -100,10 +90,10 @@ class ExcavateEnv(MPMBaseEnv):
         self.mpm_model.struct.particle_radius = 0.0025
 
     def _configure_agent(self):
-        self._agent_cfg = xarm6DefaultConfig()
+        self._agent_cfg = PandaSpoonConfig()
 
     def _load_agent(self):
-        self.agent = xarm6(
+        self.agent = Panda(
             self._scene,
             self._control_freq,
             control_mode=self._control_mode,
@@ -111,11 +101,11 @@ class ExcavateEnv(MPMBaseEnv):
         )
 
         self.grasp_site: sapien.Link = get_entity_by_name(
-            self.agent.robot.get_links(), "drive_joint"
+            self.agent.robot.get_links(), "spoon"
         )
 
     def _initialize_agent(self):
-        qpos = np.array([-0.139, 0.417, -1.811, -0.035, 1.442, -0.176, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85])
+        qpos = np.array([-0.174, 0.457, 0.203, -1.864, -0.093, 2.025, 1.588])
         qpos[:-1] += self._episode_rng.normal(0, 0.02, len(qpos) - 1)
         qpos[-1] += self._episode_rng.normal(0, 0.2, 1)
         self.agent.reset(qpos)
@@ -128,10 +118,10 @@ class ExcavateEnv(MPMBaseEnv):
         self.target_num = self._episode_rng.choice(range(250, 1150), 1)[0]
         self.mpm_model.struct.n_particles = len(self.model_builder.mpm_particle_q)
 
-        # bucket_mesh = actor2meshes(self.grasp_site)[0]
-        # vertices = bucket_mesh.vertices
-        # ones = np.ones(len(vertices))
-        # self.vertices_mat = np.column_stack((vertices, ones.T))
+        bucket_mesh = actor2meshes(self.grasp_site)[0]
+        vertices = bucket_mesh.vertices
+        ones = np.ones(len(vertices))
+        self.vertices_mat = np.column_stack((vertices, ones.T))
 
     def _load_actors(self):
         super()._load_actors()
@@ -149,35 +139,12 @@ class ExcavateEnv(MPMBaseEnv):
         w3.set_pose(sapien.Pose([0.1, 0, 0.03], [0.7071068, 0, 0, 0.7071068]))
         self.walls = [w0, w1, w2, w3]
 
-        # bowl_dir = os.path.join(
-        #     PACKAGE_ASSET_DIR, "descriptions/feeding/meshes/bowl.STL"
-        #     )
-        # pose = sapien.Pose([0, 0, 0.1])
-        # b = self._scene.create_actor_builder()
-        # b.add_visual_from_file(bowl_dir, pose, scale=[0.002] * 3)
-        # b.add_collision_from_file(bowl_dir, pose, scale=[0.002] * 3, density=300)
-        # self.source_container = b.build("bowl")
-        # self.source_aabb = get_local_axis_aligned_bbox_for_link(self.source_container)
-
-        # beaker_file = os.path.join(
-        #     PACKAGE_ASSET_DIR, "deformable_manipulation", "beaker.glb"
-        # )
-        # target_radius = 0.12
-        # pose = sapien.Pose([0, 0, 0.0])
-        # b = self._scene.create_actor_builder()
-        # b.add_visual_from_file(beaker_file, pose, scale=[target_radius] * 3)
-        # b.add_collision_from_file(beaker_file, pose, scale=[target_radius] * 3, density=300)
-        # self.target_beaker = b.build("target_beaker")
-        # self.target_aabb = get_local_axis_aligned_bbox_for_link(self.target_beaker)
-        # self.target_aabc = get_local_aabc_for_actor(self.target_beaker)
-
-
-    # def _get_coupling_actors(
-    #     self,
-    # ):
-    #     return [
-    #         (l, "visual") for l in self.agent.robot.get_links() if l.name == "bucket"
-    #     ] + self.walls
+    def _get_coupling_actors(
+        self,
+    ):
+        return [
+            (l, "visual") for l in self.agent.robot.get_links() if l.name == "spoon"
+        ] + self.walls
 
     def _register_cameras(self):
         p, q = [-0.2, -0, 0.4], euler2quat(0, np.pi / 6, 0)
@@ -247,46 +214,46 @@ class ExcavateEnv(MPMBaseEnv):
             & (bot_signs > 0)
         )[0]
 
-    # def _bucket_keypoints(self):
-    #     gripper_mat = self.grasp_site.get_pose().to_transformation_matrix()
-    #     bucket_base_mat = np.array(
-    #         [[1, 0, 0, 0], [0, 1, 0, -0.01], [0, 0, 1, 0.045], [0, 0, 0, 1]]
-    #     )
-    #     bucket_tlmat = np.array(
-    #         [[1, 0, 0, -0.03], [0, 1, 0, -0.01], [0, 0, 1, 0.01], [0, 0, 0, 1]]
-    #     )
-    #     bucket_trmat = np.array(
-    #         [[1, 0, 0, 0.03], [0, 1, 0, -0.01], [0, 0, 1, 0.01], [0, 0, 0, 1]]
-    #     )
-    #     bucket_blmat = np.array(
-    #         [[1, 0, 0, -0.03], [0, 1, 0, 0.02], [0, 0, 1, 0.08], [0, 0, 0, 1]]
-    #     )
-    #     bucket_brmat = np.array(
-    #         [[1, 0, 0, 0.03], [0, 1, 0, 0.02], [0, 0, 1, 0.08], [0, 0, 0, 1]]
-    #     )
-    #     bucket_base_pos = sapien.Pose.from_transformation_matrix(
-    #         gripper_mat @ bucket_base_mat
-    #     ).p
-    #     bucket_tlpos = sapien.Pose.from_transformation_matrix(
-    #         gripper_mat @ bucket_tlmat
-    #     ).p
-    #     bucket_trpos = sapien.Pose.from_transformation_matrix(
-    #         gripper_mat @ bucket_trmat
-    #     ).p
-    #     bucket_blpos = sapien.Pose.from_transformation_matrix(
-    #         gripper_mat @ bucket_blmat
-    #     ).p
-    #     bucket_brpos = sapien.Pose.from_transformation_matrix(
-    #         gripper_mat @ bucket_brmat
-    #     ).p
-    #     return (
-    #         bucket_base_pos,
-    #         bucket_tlpos,
-    #         bucket_trpos,
-    #         bucket_blpos,
-    #         bucket_brpos,
-    #         gripper_mat,
-    #     )
+    def _bucket_keypoints(self):
+        gripper_mat = self.grasp_site.get_pose().to_transformation_matrix()
+        bucket_base_mat = np.array(
+            [[1, 0, 0, 0], [0, 1, 0, -0.01], [0, 0, 1, 0.045], [0, 0, 0, 1]]
+        )
+        bucket_tlmat = np.array(
+            [[1, 0, 0, -0.03], [0, 1, 0, -0.01], [0, 0, 1, 0.01], [0, 0, 0, 1]]
+        )
+        bucket_trmat = np.array(
+            [[1, 0, 0, 0.03], [0, 1, 0, -0.01], [0, 0, 1, 0.01], [0, 0, 0, 1]]
+        )
+        bucket_blmat = np.array(
+            [[1, 0, 0, -0.03], [0, 1, 0, 0.02], [0, 0, 1, 0.08], [0, 0, 0, 1]]
+        )
+        bucket_brmat = np.array(
+            [[1, 0, 0, 0.03], [0, 1, 0, 0.02], [0, 0, 1, 0.08], [0, 0, 0, 1]]
+        )
+        bucket_base_pos = sapien.Pose.from_transformation_matrix(
+            gripper_mat @ bucket_base_mat
+        ).p
+        bucket_tlpos = sapien.Pose.from_transformation_matrix(
+            gripper_mat @ bucket_tlmat
+        ).p
+        bucket_trpos = sapien.Pose.from_transformation_matrix(
+            gripper_mat @ bucket_trmat
+        ).p
+        bucket_blpos = sapien.Pose.from_transformation_matrix(
+            gripper_mat @ bucket_blmat
+        ).p
+        bucket_brpos = sapien.Pose.from_transformation_matrix(
+            gripper_mat @ bucket_brmat
+        ).p
+        return (
+            bucket_base_pos,
+            bucket_tlpos,
+            bucket_trpos,
+            bucket_blpos,
+            bucket_brpos,
+            gripper_mat,
+        )
 
     def _get_bbox(self, points):
         return np.array(
@@ -452,7 +419,7 @@ class ExcavateEnv(MPMBaseEnv):
         return reward
 
     def compute_normalized_dense_reward(self, **kwargs):
-        return -1.0
+        return self.compute_dense_reward(**kwargs) / 6.0
 
     def render(self, draw_box=False, draw_target=False):
         if draw_target:

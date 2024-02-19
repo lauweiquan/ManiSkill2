@@ -151,7 +151,7 @@ class CustomEnv(MPMBaseEnv):
         # here you initialize the agent/robot. This usually involves setting the joint position of the robot. We provide
         # some default code below for panda and xmate3 set the robot to a "rest" position with a little bit of noise for randomization
 
-        qpos = np.array([1.3060075393995658, -0.02468791861552432, -1.1424824215453073, -0.8894981281919003, 1.5227398183384366, 1.73813112889074, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85])
+        qpos = np.array([0.311, -0.313, -1.336, -0.104, 1.428, 0.656, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85])
         # randomise location of intial joint position
         # qpos[:-1] += self._episode_rng.normal(0, 0.02, len(qpos) - 1)
         # qpos[-1] += self._episode_rng.normal(0, 0.2, 1)

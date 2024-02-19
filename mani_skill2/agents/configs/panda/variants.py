@@ -69,6 +69,35 @@ class PandaBucketConfig(PandaDefaultConfig):
             fov=np.pi / 2,
             actor_uid="bucket",
         )
+    
+class PandaSpoonConfig(PandaDefaultConfig):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.urdf_path = "{PACKAGE_ASSET_DIR}/descriptions/panda_spoon.urdf"
+        self.ee_link_name = "spoon"
+
+    @property
+    def controllers(self):
+        controller_configs = super().controllers
+        for k, v in controller_configs.items():
+            if isinstance(v, dict) and "gripper" in v:
+                v.pop("gripper")
+        return controller_configs
+
+    @property
+    def cameras(self):
+        return CameraConfig(
+            uid="hand_camera",
+            p=[0.0, 0.08, 0.0],
+            q=[0.5, -0.5, -0.5, -0.5],
+            width=128,
+            height=128,
+            near=0.01,
+            far=10,
+            fov=np.pi / 2,
+            actor_uid="spoon",
+        )
 
 
 class PandaStickConfig(PandaDefaultConfig):
